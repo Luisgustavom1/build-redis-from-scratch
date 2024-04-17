@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net"
+
+	"github.com/Luisgustavom1/build-redis-from-scratch/resp"
 )
 
 func main() {
@@ -21,7 +23,7 @@ func main() {
 	defer conn.Close()
 
 	for {
-		resp := NewResp(conn)
+		resp := resp.NewResp(conn)
 		value, err := resp.Read()
 		if err != nil {
 			fmt.Println(err)
