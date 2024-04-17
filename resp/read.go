@@ -15,8 +15,35 @@ const (
 	ARRAY   = "*"
 )
 
+type ValueType uint8
+
+const (
+	Array ValueType = iota
+	Bulk
+	String
+	Null
+	Error
+)
+
+func (v ValueType) String() string {
+	switch v {
+	case Array:
+		return "Array"
+	case Bulk:
+		return "Bulk"
+	case String:
+		return "String"
+	case Null:
+		return "Null"
+	case Error:
+		return "Error"
+	default:
+		return "Unknown"
+	}
+}
+
 type Value struct {
-	typ   string
+	typ   ValueType
 	str   string
 	num   int
 	bulk  string
@@ -62,7 +89,7 @@ func (r *Resp) Read() (Value, error) {
 
 func (r *Resp) readArray() (Value, error) {
 	v := Value{}
-	v.typ = "array"
+	v.typ = Array
 
 	arrLen, err := r.readInteger()
 	if err != nil {
@@ -83,7 +110,7 @@ func (r *Resp) readArray() (Value, error) {
 
 func (r *Resp) readBulk() (Value, error) {
 	v := Value{}
-	v.typ = "bulk"
+	v.typ = Bulk
 
 	bulkLen, err := r.readInteger()
 	if err != nil {
