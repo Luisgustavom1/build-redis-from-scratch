@@ -23,15 +23,17 @@ func main() {
 	defer conn.Close()
 
 	for {
-		resp := resp.NewResp(conn)
-		value, err := resp.Read()
+		res := resp.NewResp(conn)
+		_, err := res.Read()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		fmt.Println(value)
-
-		conn.Write([]byte("+OK\r\n"))
+		writer := resp.NewWriter(conn)
+		writer.Write(resp.Value{
+			Typ: resp.String,
+			Str: "OK",
+		})
 	}
 }

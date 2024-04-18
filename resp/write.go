@@ -26,7 +26,7 @@ func (w *Writer) Write(v Value) error {
 }
 
 func (v Value) Marshal() []byte {
-	switch v.typ {
+	switch v.Typ {
 	case Array:
 		return v.marshalArray()
 	case Bulk:
@@ -43,28 +43,28 @@ func (v Value) Marshal() []byte {
 }
 
 func (v Value) marshalString() []byte {
-	str := fmt.Sprintf("%s%s\r\n", STRING, v.str)
+	str := fmt.Sprintf("%s%s\r\n", STRING, v.Str)
 	return []byte(str)
 }
 
 func (v Value) marshalBulk() []byte {
-	bulkLen := len(v.bulk)
-	str := fmt.Sprintf("%s%s\r\n%s\r\n", BULK, strconv.Itoa(bulkLen), v.bulk)
+	bulkLen := len(v.Bulk)
+	str := fmt.Sprintf("%s%s\r\n%s\r\n", BULK, strconv.Itoa(bulkLen), v.Bulk)
 	return []byte(str)
 }
 
 func (v Value) marshalArray() []byte {
-	arrLen := len(v.array)
+	arrLen := len(v.Array)
 	str := fmt.Sprintf("%s%s\r\n", ARRAY, strconv.Itoa(arrLen))
 	bytes := []byte(str)
 	for i := 0; i < arrLen; i++ {
-		bytes = append(bytes, v.array[i].Marshal()...)
+		bytes = append(bytes, v.Array[i].Marshal()...)
 	}
 	return bytes
 }
 
 func (v Value) marshallError() []byte {
-	bytes := fmt.Sprintf("%s%s\r\n", ERROR, v.str)
+	bytes := fmt.Sprintf("%s%s\r\n", ERROR, v.Str)
 	return []byte(bytes)
 }
 

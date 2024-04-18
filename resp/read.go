@@ -43,11 +43,11 @@ func (v ValueType) String() string {
 }
 
 type Value struct {
-	typ   ValueType
-	str   string
-	num   int
-	bulk  string
-	array []Value
+	Typ   ValueType
+	Str   string
+	Num   int
+	Bulk  string
+	Array []Value
 }
 
 type Resp struct {
@@ -89,20 +89,20 @@ func (r *Resp) Read() (Value, error) {
 
 func (r *Resp) readArray() (Value, error) {
 	v := Value{}
-	v.typ = Array
+	v.Typ = Array
 
 	arrLen, err := r.readInteger()
 	if err != nil {
 		return v, err
 	}
 
-	v.array = make([]Value, arrLen)
+	v.Array = make([]Value, arrLen)
 	for i := 0; i < arrLen; i++ {
 		val, err := r.Read()
 		if err != nil {
 			return v, err
 		}
-		v.array[i] = val
+		v.Array[i] = val
 	}
 
 	return v, nil
@@ -110,7 +110,7 @@ func (r *Resp) readArray() (Value, error) {
 
 func (r *Resp) readBulk() (Value, error) {
 	v := Value{}
-	v.typ = Bulk
+	v.Typ = Bulk
 
 	bulkLen, err := r.readInteger()
 	if err != nil {
@@ -119,7 +119,7 @@ func (r *Resp) readBulk() (Value, error) {
 
 	bulkBytes := make([]byte, bulkLen)
 	r.reader.Read(bulkBytes)
-	v.bulk = string(bulkBytes)
+	v.Bulk = string(bulkBytes)
 
 	// Read the trailing \r\n
 	r.reader.ReadLine()
