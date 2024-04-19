@@ -63,8 +63,9 @@ func (aof *Aof) Read(fn func(resp.Value)) {
 	aof.mu.Lock()
 	defer aof.mu.Unlock()
 
+	res := resp.NewResp(aof.rd)
+
 	for {
-		res := resp.NewResp(aof.rd)
 		value, err := res.Read()
 		if err != nil {
 			return
