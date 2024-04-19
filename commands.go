@@ -8,6 +8,10 @@ import (
 
 var Handlers = map[string]func([]resp.Value) resp.Value{
 	"PING": ping,
+	"SET":  set,
+	"GET":  get,
+	"HSET": hset,
+	"HGET": hget,
 }
 
 func ping(args []resp.Value) resp.Value {
@@ -34,4 +38,63 @@ func set(args []resp.Value) resp.Value {
 	SETsMu.Unlock()
 
 	return resp.Value{Typ: resp.String, Str: "OK"}
+}
+
+func get(args []resp.Value) resp.Value {
+	if len(args) != 1 {
+		return resp.Value{Typ: resp.Error, Str: "Expected 1 arguments"}
+	}
+
+	k := args[0].Bulk
+
+	SETsMu.RLock()
+	v, ok := SETs[k]
+	SETsMu.RUnlock()
+
+	if !ok {
+		return resp.Value{Typ: resp.Null}
+	}
+
+	return resp.Value{Typ: resp.Bulk, Bulk: v}
+}
+
+var HSETs = map[string]map[string]string{}
+var HSETsMu = sync.RWMutex{}
+
+func hset(args []resp.Value) resp.Value {
+	if len(args) != 3 {
+		return resp.Value{Typ: resp.Error, Str: "Expected 3 arguments"}
+	}
+
+	h := args[0].Bulk
+	if _, ok := HSETs[h]; !ok {
+		HSETs[h] = map[string]string{}
+	}
+	k := args[1].Bulk
+	v := args[2].Bulk
+
+	HSETsMu.Lock()
+	HSETs[h][k] = v
+	HSETsMu.Unlock()
+
+	return resp.Value{Typ: resp.String, Str: "OK"}
+}
+
+func hget(args []resp.Value) resp.Value {
+	if len(args) != 2 {
+		return resp.Value{Typ: resp.Error, Str: "Expected 2 arguments"}
+	}
+
+	h := args[0].Bulk
+	k := args[1].Bulk
+
+	HSETsMu.RLock()
+	v, ok := HSETs[h][k]
+	HSETsMu.RUnlock()
+
+	if !ok {
+		return resp.Value{Typ: resp.Null}
+	}
+
+	return resp.Value{Typ: resp.Bulk, Bulk: v}
 }
