@@ -7,11 +7,12 @@ import (
 )
 
 var Handlers = map[string]func([]resp.Value) resp.Value{
-	"PING": ping,
-	"SET":  set,
-	"GET":  get,
-	"HSET": hset,
-	"HGET": hget,
+	"PING":    ping,
+	"SET":     set,
+	"GET":     get,
+	"HSET":    hset,
+	"HGET":    hget,
+	"HGETALL": hgetall,
 }
 
 func ping(args []resp.Value) resp.Value {
@@ -97,4 +98,31 @@ func hget(args []resp.Value) resp.Value {
 	}
 
 	return resp.Value{Typ: resp.Bulk, Bulk: v}
+}
+
+func hgetall(args []resp.Value) resp.Value {
+	if len(args) != 1 {
+		return resp.Value{Typ: resp.Error, Str: "Expected 1 arguments"}
+	}
+
+	h := args[0].Bulk
+
+	HSETsMu.RLock()
+	maps, ok := HSETs[h]
+	HSETsMu.RUnlock()
+
+	if !ok {
+		return resp.Value{Typ: resp.Null}
+	}
+
+	values := make([]resp.Value, len(maps)*2)
+	i := 0
+	for k, v := range maps {
+		values[i] = resp.Value{Typ: resp.Bulk, Bulk: k}
+		i++
+		values[i] = resp.Value{Typ: resp.Bulk, Bulk: v}
+		i++
+	}
+
+	return resp.Value{Typ: resp.Array, Array: values}
 }
